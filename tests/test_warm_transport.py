@@ -18,7 +18,7 @@ def fake(scenario="normal", extra=None):
     args = [str(ROOT / "tests/fake_acp.py"), scenario]
     if extra is not None:
         args.append(extra)
-    return acp.OpenCodeFreeClient(command=sys.executable, args=args)
+    return acp.OpenCodeACPClient(command=sys.executable, args=args)
 
 
 def content(result):
@@ -91,7 +91,7 @@ class IsolationAndSignatureTests(unittest.TestCase):
         self.assertIsNone(acp.optional_config_option({"configOptions": []}, "effort", "low"))
 
     def test_default_command_line_is_pure(self):
-        item = acp.OpenCodeFreeClient()
+        item = acp.OpenCodeACPClient()
         self.addCleanup(item.close)
         self.assertEqual(item.args, ["acp", "--pure"])
 

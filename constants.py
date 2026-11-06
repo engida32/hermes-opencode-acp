@@ -4,7 +4,7 @@ from pathlib import Path
 from .launcher import resolve_opencode
 
 VERSION = "0.4.0"
-PROVIDER = "opencode-free-acp"
+PROVIDER = "hermes-opencode-acp"
 DEFAULT_MODEL = "opencode/glm-5.3-flash-free"
 # Explicitly curated free IDs, never arbitrary strings ending in '-free'.
 # ACP discovery intersects this list; inference checks live availability again.

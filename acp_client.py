@@ -172,7 +172,7 @@ def render_content(content):
         return content
     if isinstance(content, list):
         if any(isinstance(item, dict) and item.get("type") not in (None, "text", "input_text", "output_text") for item in content):
-            raise ValueError("OpenCode Free ACP is text-only; image/audio attachments are not forwarded")
+            raise ValueError("OpenCode ACP is text-only; image/audio attachments are not forwarded")
         return "\n".join(item if isinstance(item, str) else str(item.get("text", ""))
                          for item in content if isinstance(item, (str, dict)))
     return json.dumps(content, ensure_ascii=False)
@@ -319,7 +319,7 @@ class BridgeWorker:
             self.request("initialize", {
                 "protocolVersion": 1,
                 "clientCapabilities": {"fs": {"readTextFile": False, "writeTextFile": False}, "terminal": False},
-                "clientInfo": {"name": "hermes-opencode-free-acp", "version": VERSION},
+                "clientInfo": {"name": "hermes-opencode-acp", "version": VERSION},
             }, timeout=initialize_timeout)
         except BaseException:
             self.close()
@@ -506,7 +506,7 @@ class BridgeWorker:
             self._sessions.clear()
 
 
-class OpenCodeFreeClient:
+class OpenCodeACPClient:
     HERMES_SKIP_TRANSPORT_WRAP = True
     HERMES_SKIP_ASYNC_WRAP = True
 
@@ -514,7 +514,7 @@ class OpenCodeFreeClient:
         self.command = acp_command or command or opencode_command()
         self.args = list(acp_args or args or ["acp", "--pure"])
         self.workspace = str(WORKSPACE)
-        self.base_url = "acp://opencode-free"
+        self.base_url = "acp://hermes-opencode-acp"
         self.chat = Record(completions=Record(create=self._create_chat_completion))
         self.is_closed = False
         self._cancelled = threading.Event()
@@ -571,7 +571,7 @@ class OpenCodeFreeClient:
                     raise RuntimeError("OpenCode ACP request was cancelled")
                 config_home = self._config_home
                 if config_home is None:
-                    config_home = tempfile.mkdtemp(prefix="opencode-free-acp-")
+                    config_home = tempfile.mkdtemp(prefix="hermes-opencode-acp-")
                     self._config_home = config_home
             spawned = {}
 
@@ -681,7 +681,7 @@ class OpenCodeFreeClient:
 
     def _run_prompt(self, messages, *, model, tools, tool_choice, timeout_seconds):
         if model not in FREE_MODELS:
-            raise ValueError(f"OpenCode Free refuses an unapproved or paid model: {model!r}")
+            raise ValueError(f"OpenCode ACP refuses an unapproved or paid model: {model!r}")
         timeout = effective_timeout(timeout_seconds)
         messages = messages or []
         signatures = [message_signature(message) for message in messages]

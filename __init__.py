@@ -1,19 +1,19 @@
-"""OpenCode Free ACP, using only Hermes's documented provider interface."""
+"""Hermes OpenCode ACP, using only Hermes's documented provider interface."""
 from providers import register_provider
 from providers.base import ProviderProfile
 
 from .constants import DEFAULT_MODEL, FREE_MODELS, VERSION, opencode_command
 
 
-class OpenCodeFreeProfile(ProviderProfile):
+class OpenCodeACPProfile(ProviderProfile):
     def create_client(self, **client_kwargs):
-        from .acp_client import OpenCodeFreeClient
+        from .acp_client import OpenCodeACPClient
 
         if not client_kwargs.get("command") and not client_kwargs.get("acp_command"):
             client_kwargs["command"] = opencode_command()
         if not client_kwargs.get("args") and not client_kwargs.get("acp_args"):
             client_kwargs["args"] = ["acp", "--pure"]
-        return OpenCodeFreeClient(**client_kwargs)
+        return OpenCodeACPClient(**client_kwargs)
 
     def fetch_models(self, *, api_key=None, base_url=None, timeout=15.0):
         client = self.create_client()
@@ -29,13 +29,13 @@ class OpenCodeFreeProfile(ProviderProfile):
         return 131072 if model in FREE_MODELS else None
 
 
-profile = OpenCodeFreeProfile(
-    name="opencode-free-acp",
-    display_name="OpenCode Free (ACP)",
+profile = OpenCodeACPProfile(
+    name="hermes-opencode-acp",
+    display_name="Hermes OpenCode ACP",
     description=f"Real OpenCode CLI, Hermes-owned tools, curated free models (bridge {VERSION})",
     auth_type="external_process",
     api_mode="chat_completions",
-    base_url="acp://opencode-free",
+    base_url="acp://hermes-opencode-acp",
     process_command=opencode_command(),
     process_args=("acp", "--pure"),
     process_command_env_vars=("HERMES_OPENCODE_ACP_COMMAND",),

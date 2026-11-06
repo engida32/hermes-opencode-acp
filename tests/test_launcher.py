@@ -211,7 +211,7 @@ class PortableStdioTests(unittest.TestCase):
 
     def test_unicode_protocol_round_trip(self):
         marker = "ACP café — 雪 👋"
-        item = acp.OpenCodeFreeClient(command=sys.executable, args=[str(ROOT / "tests/fake_acp.py"), "unicode"])
+        item = acp.OpenCodeACPClient(command=sys.executable, args=[str(ROOT / "tests/fake_acp.py"), "unicode"])
         self.assertEqual(self.complete(item, marker).choices[0].message.content, marker)
 
     def test_stdio_and_workspace_paths_with_spaces_and_unicode(self):
@@ -219,7 +219,7 @@ class PortableStdioTests(unittest.TestCase):
             folder = Path(directory)
             server = folder / "fake server.py"
             shutil.copyfile(ROOT / "tests/fake_acp.py", server)
-            item = acp.OpenCodeFreeClient(command=sys.executable, args=[str(server)])
+            item = acp.OpenCodeACPClient(command=sys.executable, args=[str(server)])
             item.workspace = directory
             self.assertEqual(self.complete(item).choices[0].message.content, "FAKE_ACP_OK")
 
@@ -233,7 +233,7 @@ class PortableStdioTests(unittest.TestCase):
                     wrapper = folder / ("opencode." + extension)
                     wrapper.write_text('@echo off\nif not "%~1"=="acp" exit /b 97\n"' + sys.executable +
                                        '" "%~dp0fake_acp.py" normal\n', encoding="utf-8")
-                    item = acp.OpenCodeFreeClient(command=str(wrapper))
+                    item = acp.OpenCodeACPClient(command=str(wrapper))
                     self.assertEqual(self.complete(item).choices[0].message.content, "FAKE_ACP_OK")
 
     @unittest.skipUnless(sys.platform == "win32", "requires real Windows Job Objects")
@@ -250,7 +250,7 @@ class PortableStdioTests(unittest.TestCase):
                 unrelated.kill()
             unrelated.wait(timeout=5)
         self.addCleanup(reap_unrelated)
-        item = acp.OpenCodeFreeClient(command=sys.executable, args=[str(ROOT / "tests/fake_acp.py"), "descendant"])
+        item = acp.OpenCodeACPClient(command=sys.executable, args=[str(ROOT / "tests/fake_acp.py"), "descendant"])
         reply = self.complete(item).choices[0].message.content
         pid = int(reply.removeprefix("FAKE_CHILD_PID:"))
         kernel = ctypes.WinDLL("kernel32", use_last_error=True)

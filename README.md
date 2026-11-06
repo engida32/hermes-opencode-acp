@@ -1,4 +1,4 @@
-# OpenCode Free ACP for Hermes
+# Hermes OpenCode ACP
 
 Use the **real OpenCode CLI over ACP** as a Hermes model provider, while **Hermes keeps its own tool loop and approvals**.
 
@@ -30,13 +30,13 @@ Native Linux, macOS and Windows CI passes the offline transport suite and real O
 Read the [security and privacy notes](#security-privacy-and-terms) first. Then install the public repository:
 
 ```sh
-hermes plugins install cryptobredda/hermes-opencode-free-acp --enable
+hermes plugins install engida32/hermes-opencode-acp --enable
 ```
 
-Select **OpenCode Free (ACP)** with `hermes model` or the Desktop model picker. To launch without changing the persistent default:
+Select **Hermes OpenCode ACP** with `hermes model` or the Desktop model picker. To launch without changing the persistent default:
 
 ```sh
-hermes chat --provider opencode-free-acp --model opencode/deepseek-v4.1-flash-free
+hermes chat --provider hermes-opencode-acp --model opencode/deepseek-v4.1-flash-free
 ```
 
 `opencode/glm-5.3-flash-free` is also live-tested. Other offered models are discovered, not individually live-tested. Free availability, pricing, limits and privacy terms can change independently of this release; the name ending in `free` is not a perpetual pricing or access guarantee.
@@ -112,14 +112,14 @@ Unlike the offline suite, this requires OpenCode and may use its normal catalog 
 Check the actual provider with Hermes:
 
 ```sh
-hermes plugins validate /path/to/hermes-opencode-free-acp --install-deps --json
-hermes plugins doctor /path/to/hermes-opencode-free-acp --ci
+hermes plugins validate /path/to/hermes-opencode-acp --install-deps --json
+hermes plugins doctor /path/to/hermes-opencode-acp --ci
 ```
 
 For a live smoke test, create your own harmless scratch file and ask the model to read it. The example below uses POSIX shell line continuations; in PowerShell use one line and substitute your Windows file path:
 
 ```sh
-hermes chat --source gui --provider opencode-free-acp \
+hermes chat --source gui --provider hermes-opencode-acp \
   --model opencode/deepseek-v4.1-flash-free --ignore-rules --toolsets file \
   --max-turns 4 --format stream-json \
   -q 'Use the real Hermes read_file tool to read /absolute/path/to/test.txt and return its exact contents.'

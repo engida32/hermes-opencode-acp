@@ -23,7 +23,7 @@ def main():
     if args.npm_prefix:
         name = "opencode.cmd" if os.name == "nt" else "opencode"
         command = str((args.npm_prefix / "node_modules/.bin" / name).resolve())
-    client = acp.OpenCodeFreeClient(command=command)
+    client = acp.OpenCodeACPClient(command=command)
     try:
         worker = client._ensure_worker(args.timeout)
         with worker.rpc_lock:

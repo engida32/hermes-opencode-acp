@@ -21,7 +21,7 @@ def envelope(name="check_connection", arguments=None, call_id="test-call"):
 
 
 def fake(scenario="normal"):
-    return acp.OpenCodeFreeClient(command=sys.executable, args=[str(ROOT / "tests/fake_acp.py"), scenario])
+    return acp.OpenCodeACPClient(command=sys.executable, args=[str(ROOT / "tests/fake_acp.py"), scenario])
 
 
 class ProtocolTests(unittest.TestCase):
@@ -136,7 +136,7 @@ class ProtocolTests(unittest.TestCase):
             self.assertEqual(acp.child_environment(), {"HOME": "/test-home", "PATH": "/test-path"})
 
     def test_workspace_is_fixed_not_caller_selected(self):
-        item = acp.OpenCodeFreeClient(acp_cwd="/unrelated")
+        item = acp.OpenCodeACPClient(acp_cwd="/unrelated")
         self.assertEqual(item.workspace, str(constants.WORKSPACE))
         item.close()
 

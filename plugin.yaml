@@ -1,11 +1,11 @@
 manifest_version: 1
-name: opencode-free-acp
+name: hermes-opencode-acp
 kind: model-provider
 version: 0.4.0
 requires_hermes: ">=0.22.2"
 description: Real OpenCode ACP inference with Hermes-owned tools and curated free models
-author: cryptobredda
-homepage: https://github.com/cryptobredda/hermes-opencode-free-acp
+author: engida32
+homepage: https://github.com/engida32/hermes-opencode-acp
 license: MIT
 tags: [opencode, acp, model-provider, free-models]
 capabilities:
