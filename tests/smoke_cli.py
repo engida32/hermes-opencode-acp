@@ -25,7 +25,9 @@ def main():
         command = str((args.npm_prefix / "node_modules/.bin" / name).resolve())
     client = acp.OpenCodeFreeClient(command=command)
     try:
-        with client._session(args.timeout) as (session, request):
+        worker = client._ensure_worker(args.timeout)
+        with worker.rpc_lock:
+            session = worker.new_session(args.timeout)
             advertised = set(acp.options(acp.config_option(session, "model")))
             models = [model for model in constants.FREE_MODELS if model in advertised]
             if not models:
@@ -33,9 +35,9 @@ def main():
             mode = acp.config_option(session, "mode", acp.BRIDGE_MODE)
             model = acp.config_option(session, "model", models[0])
             for option, value in ((mode, acp.BRIDGE_MODE), (model, models[0])):
-                result = request("session/set_config_option", {
+                result = worker.request("session/set_config_option", {
                     "sessionId": session["sessionId"], "configId": option["id"], "value": value,
-                })
+                }, timeout=args.timeout)
                 if acp.selected_value(result, option["id"]) != value:
                     raise RuntimeError("OpenCode did not confirm the selected mode/model; no inference was attempted")
         print(json.dumps({"ok": True, "platform": sys.platform, "bridge_version": constants.VERSION,

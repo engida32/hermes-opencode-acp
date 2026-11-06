@@ -7,7 +7,7 @@ This is an unofficial community integration, not an OpenCode or Nous Research pr
 ## What is different?
 
 - The official installed `opencode acp` process makes model requests. The plugin does not imitate OpenCode HTTP headers or access its inference API directly.
-- OpenCode runs its normal **Build** agent in the included restricted workspace. Its native tools are denied by workspace policy; ACP file/terminal requests are rejected and permissions are cancelled. A reported native tool call aborts the request.
+- OpenCode runs its normal **Build** agent in the included restricted workspace. Workspace policy denies every native tool except read-only file access; external-directory reads and doom loops are also denied. `read` stays enabled because OpenCode's Build agent hangs when `read` is denied during session startup. ACP file/terminal requests are rejected and permissions are cancelled. Native tool notifications are ignored and the final assistant text is returned.
 - Hermes tool schemas and replayed tool results travel as text. Explicit `<hermes_tool_call>` envelopes are parsed into structural OpenAI-style calls, which **Hermes** validates and executes. The plugin never executes tool commands itself.
 - Only a curated set of free-model IDs can be requested. Discovery intersects that set with the CLI's advertised catalog. Both agent and model selection must be confirmed before a prompt is sent; selection failure never continues on a possibly paid default.
 - The transport is **Python standard library only**, with no private Hermes imports, monkey-patches, HTTP listeners, telemetry, Node/npm dependency of its own, or self-updater. OpenCode itself remains a separately installed runtime dependency.
@@ -69,11 +69,11 @@ A new plugin directory is discovered dynamically. Editing an already-imported Py
 
 ## Security, privacy and terms
 
-**Not an OS sandbox.** OpenCode is a trusted executable running as your OS user. This plugin's workspace policy and protocol refusals constrain the integration; they are not a kernel isolation boundary. OpenCode still loads its own normal configuration/login and may load operator-configured plugins or hooks. Broader OpenCode policies can override workspace policies: do not use this bridge with a configuration that re-enables native tools, and do not point its executable override at an untrusted program.
+**Not an OS sandbox.** OpenCode is a trusted executable running as your OS user. This plugin's workspace policy and protocol refusals constrain the integration; they are not a kernel isolation boundary. OpenCode still loads its own normal login and data directories. The bridge starts it with a private `XDG_CONFIG_HOME` and `--pure`, so the operator's global OpenCode MCP servers, plugins and skills are not loaded. A project-level OpenCode configuration can still override the workspace permission: do not use this bridge with a configuration that re-enables action tools or external-directory reads, and do not point its executable override at an untrusted program.
 
 **Disclosure:**
 
-- Each discovery or inference call starts a short-lived local `opencode acp` subprocess in the plugin's included workspace. Processes are stopped after the call, on cancellation, or at the request deadline. There is no plugin daemon or background inference loop.
+- The first discovery or inference call starts one local `opencode acp --pure` subprocess in the plugin's included workspace, and that process stays warm for the provider client's lifetime. It is stopped on cancellation/close or after an unrecoverable failure. ACP sessions are reused when the transcript prefix matches; otherwise a new session is created on the same warm process. There is no plugin daemon or background inference loop.
 - Prompts, conversation history, tool schemas, tool arguments/results, and normal Hermes context are handed to OpenCode and leave the machine for OpenCode and the selected model provider. Their current terms and privacy/retention rules apply. Some free models use data for improvement or prohibit confidential data.
 - OpenCode owns its own network calls, account/login handling, local configuration, caches and conversation records. The plugin never directly reads, copies, refreshes or writes vendor credential files, `.env`, Hermes `auth.json`, browser cookies or keychains. It neither acquires nor bundles a credential.
 - The child receives an allowlist of OS/HOME/PATH/XDG, Windows profile, locale, certificate and proxy environment values, not arbitrary parent variables. The selected executable's directory is prepended to the child's PATH so installed launchers can find sibling runtimes. Hermes/provider API-key variables, inline OpenCode config, and inherited YOLO settings are excluded. Operator-configured proxy URLs are forwarded as network configuration and may themselves contain proxy credentials; they are not logged.
@@ -87,8 +87,8 @@ See [OpenCode's model/privacy notices](https://opencode.ai/v2/docs/console/model
 - Text and Hermes function tools only; image/audio attachments fail explicitly instead of being silently dropped.
 - ACP output is collected before it is returned. The OpenAI-shaped `stream=True` result is buffered, **not native token-by-token streaming**.
 - Token usage/cost is **unknown** (`usage=None`). Zero counters shown by a frontend are not measured zero usage or billing evidence.
-- Full transcripts are forwarded for each call; there is no persistent ACP session or guaranteed prompt-cache reuse. This adds process and prompt overhead.
-- No reasoning-effort or temperature/output-limit controls are advertised. The CLI/model's own settings apply.
+- A matching transcript prefix reuses the ACP session and sends only the new entries; changed history or tool schemas start a fresh session on the same warm process. A cold or fresh session still sends the full transcript.
+- The bridge does not expose reasoning-effort or temperature/output-limit controls to Hermes. It selects low reasoning effort only when the CLI advertises that value for the selected model; otherwise the CLI/model default applies.
 - Tool calls use a text protocol, not native model function calling. Malformed, incomplete, unadvertised or conflicting calls fail rather than being executed.
 
 ## Verify
@@ -99,7 +99,7 @@ The offline suite needs neither Hermes nor OpenCode, credentials, internet, nor 
 python -m unittest discover -s tests -v
 ```
 
-It includes real stdio exchanges with an explicitly synthetic ACP server, not fabricated live-model results: exact model/Build selection, grouped options, tool/result replay, nested JSON, denied native operations, environment filtering, invalid frames, timeouts, process cleanup, and cancellation racing startup. Platform regressions cover GUI executable discovery, Windows quoting, Unicode/space-containing paths and protocol text. On Windows the suite also launches actual batch wrappers and verifies child-process cleanup without killing an unrelated process; those Windows-only tests are explicitly skipped elsewhere.
+It includes real stdio exchanges with an explicitly synthetic ACP server, not fabricated live-model results: exact model/Build selection, grouped options, warm process/session reuse, transcript-delta reuse, tool/result replay, nested JSON, ignored native tool notifications, environment filtering, invalid frames, timeouts, process cleanup, and cancellation racing startup. Platform regressions cover GUI executable discovery, Windows quoting, Unicode/space-containing paths and protocol text. On Windows the suite also launches actual batch wrappers and verifies child-process cleanup without killing an unrelated process; those Windows-only tests are explicitly skipped elsewhere.
 
 An optional, separate check negotiates ACP with the **real installed OpenCode CLI**, confirms Build/free-model selection, and stops before `session/prompt`. No conversation history or Hermes memory is loaded by this script:
 

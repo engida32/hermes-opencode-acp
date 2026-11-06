@@ -205,7 +205,7 @@ class _WindowsJob:
 
 
 class ProcessTree:
-    """A short-lived ACP process plus its owned process group/job, not a sandbox."""
+    """A contained ACP process plus its owned process group/job, not a sandbox."""
     def __init__(self, command, args, *, cwd, env):
         argv, options = launch_command(command, args)
         self._lock, self._job = threading.Lock(), None

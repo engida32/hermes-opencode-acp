@@ -143,20 +143,27 @@ class ProtocolTests(unittest.TestCase):
     def test_paid_or_unknown_free_model_fails_before_spawn(self):
         for model in ("openai/paid-test-only", "opencode/invented-free"):
             item = fake()
-            with patch.object(item, "_session") as session, self.assertRaises(ValueError):
+            with patch.object(item, "_ensure_worker") as ensure, self.assertRaises(ValueError):
                 item.chat.completions.create(model=model, messages=[])
-            session.assert_not_called()
+            ensure.assert_not_called()
             item.close()
 
     def test_transport_build_is_not_a_bootstrap_variable(self):
         with patch.object(constants, "BRIDGE_MODE", "old-custom-agent", create=True):
             self.assertEqual(acp.BRIDGE_MODE, "build")
 
-    def test_workspace_native_tools_are_denied(self):
+    def test_workspace_denies_native_tools_except_read(self):
         config = json.loads((ROOT / "workspace/opencode.json").read_text())
-        self.assertIn({"action": "tool.use", "resource": "*", "effect": "deny"}, config["policies"])
+        self.assertEqual(config["permission"], {
+            "*": "deny",
+            "read": "allow",
+            "external_directory": "deny",
+            "doom_loop": "deny",
+        })
+        self.assertIs(config["snapshot"], False)
         self.assertEqual(config["default_agent"], "build")
-        self.assertNotIn("build", config.get("agents", {}))
+        self.assertNotIn("build", config.get("agent", {}))
+        self.assertNotIn("policies", config)
 
     def test_no_private_hermes_imports(self):
         for path in ROOT.glob("*.py"):
@@ -205,9 +212,8 @@ class StdioTests(unittest.TestCase):
     def test_native_requests_are_denied(self):
         self.assertEqual(self.complete(self.use("denied-requests")).choices[0].message.content, "FAKE_ACP_OK")
 
-    def test_native_tool_notification_fails_closed(self):
-        with self.assertRaisesRegex(RuntimeError, "attempted a native tool"):
-            self.complete(self.use("native-tool"))
+    def test_native_tool_notification_is_denied_and_request_recovers(self):
+        self.assertEqual(self.complete(self.use("native-tool")).choices[0].message.content, "FAKE_ACP_OK")
 
     def test_empty_response_is_not_success(self):
         with self.assertRaisesRegex(RuntimeError, "no assistant text"):
@@ -257,9 +263,12 @@ class StdioTests(unittest.TestCase):
         self.assertTrue(errors)
         self.assertEqual(item._processes, set())
 
-    def test_normal_request_leaves_no_owned_process(self):
+    def test_normal_request_keeps_the_process_warm(self):
         item = self.use()
         self.complete(item)
+        self.assertEqual(len(item._processes), 1)
+        self.assertFalse(item.is_closed)
+        item.close()
         self.assertEqual(item._processes, set())
         self.assertTrue(item.is_closed)
 
