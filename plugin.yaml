@@ -8,8 +8,4 @@ author: engida32
 homepage: https://github.com/engida32/hermes-opencode-acp
 license: MIT
 tags: [opencode, acp, model-provider, free-models]
-capabilities:
-  provides_tools: []
-  provides_hooks: []
-  provides_middleware: []
-  requires_env: []
+capabilities: []
