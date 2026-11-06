@@ -1,5 +1,7 @@
 # Release verification
 
+> **Fork note.** These results were produced in the upstream repository [cryptobredda/hermes-opencode-free-acp](https://github.com/cryptobredda/hermes-opencode-free-acp) before this fork. They document the inherited 0.4.0 baseline. The fork's warm-bridge changes were verified locally with the offline suite (89 tests OK, 2 skipped) and a real ACP handshake using OpenCode 1.19.0.
+
 ## v0.4.0 — cross-platform release
 
 Verified on **2026-10-31**, including native GitHub Actions results for runtime commit `e0e1e03d99c8e8ebec17d7a468463bed04ec6fc5`. Only documentation was changed after that runtime verification.

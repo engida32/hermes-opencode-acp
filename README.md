@@ -4,6 +4,10 @@ Use the **real OpenCode CLI over ACP** as a Hermes model provider, while **Herme
 
 This is an unofficial community integration, not an OpenCode or Nous Research product. It is not a generic autonomous-agent handoff, HTTP compatibility shim, shared inference service, or API-key proxy.
 
+## Fork and credits
+
+This repository is a fork of [cryptobredda/hermes-opencode-free-acp](https://github.com/cryptobredda/hermes-opencode-free-acp). The original plugin and its ACP transport design are by cryptobredda and are MIT-licensed; the original copyright notice is preserved in [LICENSE](LICENSE). This fork is maintained by [engida32](https://github.com/engida32) and adds a warm `opencode acp --pure` process, ACP session/transcript-delta reuse, private `XDG_CONFIG_HOME` isolation, and the read-only permission exception. The verification history in [docs/VERIFICATION.md](docs/VERIFICATION.md) was produced in the original repository; this fork's warm-bridge changes were verified locally with the offline suite and a real ACP handshake.
+
 ## What is different?
 
 - The official installed `opencode acp` process makes model requests. The plugin does not imitate OpenCode HTTP headers or access its inference API directly.
