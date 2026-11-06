@@ -43,7 +43,9 @@ Select **Hermes OpenCode ACP** with `hermes model` or the Desktop model picker. 
 hermes chat --provider hermes-opencode-acp --model opencode/deepseek-v4.1-flash-free
 ```
 
-`opencode/glm-5.3-flash-free` is also live-tested. Other offered models are discovered, not individually live-tested. Free availability, pricing, limits and privacy terms can change independently of this release; the name ending in `free` is not a perpetual pricing or access guarantee.
+`opencode/glm-5.3-flash-free`, `opencode/deepseek-v4.1-flash-free`, `opencode/flint-40b-free` and `opencode/pulse-alpha-free` were live-tested. Other offered models are discovered, not individually live-tested. Free availability, pricing, limits and privacy terms can change independently of this release; the name ending in `free` is not a perpetual pricing or access guarantee.
+
+If you have a paid OpenCode Zen or Go plan, prefer Hermes's built-in `opencode-zen` or `opencode-go` providers; they use Hermes's native transport and tool loop. This plugin exists for the free-tier models, which are reached through the real OpenCode CLI over ACP rather than by impersonating its HTTP API.
 
 If the CLI is outside the gateway's PATH, the optional **non-secret** operator setting `HERMES_OPENCODE_ACP_COMMAND` names its executable. Only the `acp` argument is used by the provider; a model cannot choose the executable or its arguments.
 

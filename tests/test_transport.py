@@ -100,6 +100,28 @@ class ProtocolTests(unittest.TestCase):
         self.assertIn("real result", prompt)
         self.assertIn("prior remote tool requests", prompt)
 
+    def test_delegate_history_control_actions_render_as_transcript(self):
+        shapes = (
+            {"action": "list"},
+            {"action": "stop", "subagent_id": "sa-0-f834b4a7"},
+            {"action": "steer", "message": "focus", "subagent_id": "sa-1"},
+            {"tasks": json.dumps([{"goal": "Ship it", "context": "src/parse.py"}])},
+            {"tasks": [{"goal": "Ship it", "context": "src/parse.py"}]},
+            {"action": "spawn", "tasks": [{"goal": "Ship it"}]},
+            {"tasks": None, "goal": "Legacy wins over a null batch"},
+        )
+        for arguments in shapes:
+            with self.subTest(arguments=arguments):
+                prompt = acp.render_prompt([
+                    {"role": "assistant", "content": None, "tool_calls": [{
+                        "id": "history-id",
+                        "function": {"name": "delegate_task", "arguments": json.dumps(arguments)},
+                    }]},
+                    {"role": "user", "content": "continue"},
+                ], TOOLS)
+                self.assertIn("delegate_task", prompt)
+                self.assertIn("prior remote tool requests", prompt)
+
     def test_image_attachments_fail_instead_of_disappearing(self):
         with self.assertRaises(ValueError):
             acp.render_content([{"type": "image_url", "image_url": {"url": "data:image/png;base64,TEST"}}])
@@ -190,6 +212,12 @@ class StdioTests(unittest.TestCase):
 
     def test_model_discovery_filters_paid_models(self):
         self.assertEqual(self.use().list_models(timeout_seconds=5), [constants.DEFAULT_MODEL])
+
+    def test_model_discovery_includes_verified_free_models(self):
+        self.assertEqual(
+            self.use("catalog").list_models(timeout_seconds=5),
+            [constants.DEFAULT_MODEL, "opencode/flint-40b-free", "opencode/pulse-alpha-free"],
+        )
 
     def test_real_stdio_remote_tool_parsing(self):
         result = self.complete(self.use("tool"), tools=TOOLS)

@@ -16,6 +16,8 @@ FREE_MODELS = (
     "opencode/nemotron-3.5-lightning-free",
     "opencode/beam-free",
     "opencode/big-pickle",
+    "opencode/flint-40b-free",
+    "opencode/pulse-alpha-free",
 )
 WORKSPACE = Path(__file__).resolve().parent / "workspace"
 

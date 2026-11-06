@@ -13,6 +13,12 @@ for stream in (sys.stdin, sys.stdout):
 SCENARIO = sys.argv[1] if len(sys.argv) > 1 else "normal"
 EXTRA = sys.argv[2] if len(sys.argv) > 2 else None
 MODEL = "opencode/glm-5.3-flash-free"
+CATALOG = (
+    MODEL,
+    "opencode/flint-40b-free",
+    "opencode/pulse-alpha-free",
+    "openai/paid-test-only",
+)
 SESSIONS = {}
 COUNTER = 0
 child = None
@@ -32,7 +38,7 @@ def config(session_id):
         {"id": "mode", "category": "mode", "currentValue": values["mode"],
          "options": [{"value": "plan"}] + ([] if SCENARIO == "missing-build" else [{"value": "build"}])},
         {"id": "model", "category": "model", "currentValue": values["model"],
-         "options": [{"value": MODEL}, {"value": "openai/paid-test-only"}]},
+         "options": [{"value": model} for model in (CATALOG if SCENARIO == "catalog" else (MODEL, "openai/paid-test-only"))]},
     ]
     if SCENARIO != "missing-effort":
         result.append({"id": "effort", "category": "thought_level",
