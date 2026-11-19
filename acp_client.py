@@ -302,6 +302,7 @@ class BridgeWorker:
         self._closed = False
         self._framed = False
         self._startup_noise = 0
+        self._noise_sample = ""
         self._sessions = []
         self._sequence = 0
         self._cwd = cwd
@@ -396,9 +397,13 @@ class BridgeWorker:
                 except json.JSONDecodeError:
                     # npm launchers print update notices outside the protocol
                     if self._startup_noise < MAX_STARTUP_NOISE:
+                        if not self._noise_sample:
+                            self._noise_sample = line.strip()[:160]
                         self._startup_noise += 1
                         continue
-                    raise ValueError("OpenCode ACP emitted a non-JSON frame") from None
+                    raise ValueError(
+                        "OpenCode ACP emitted a non-JSON frame: " + repr(self._noise_sample or line.strip()[:160])
+                    ) from None
                 if not isinstance(message, dict):
                     raise ValueError("OpenCode ACP emitted a non-object frame")
                 self._framed = True
