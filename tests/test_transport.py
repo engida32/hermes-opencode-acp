@@ -251,6 +251,10 @@ class StdioTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.complete(self.use("exit"))
 
+    def test_launcher_banner_before_protocol_is_tolerated(self):
+        result = self.complete(self.use("banner"))
+        self.assertEqual(result.choices[0].message.content, "FAKE_ACP_OK")
+
     def test_invalid_json_is_not_success(self):
         with self.assertRaises(RuntimeError):
             self.complete(self.use("invalid-json"))

@@ -221,7 +221,10 @@ class PortableStdioTests(unittest.TestCase):
             shutil.copyfile(ROOT / "tests/fake_acp.py", server)
             item = acp.OpenCodeACPClient(command=sys.executable, args=[str(server)])
             item.workspace = directory
-            self.assertEqual(self.complete(item).choices[0].message.content, "FAKE_ACP_OK")
+            try:
+                self.assertEqual(self.complete(item).choices[0].message.content, "FAKE_ACP_OK")
+            finally:
+                item.close()  # the child holds the temp directory until it exits
 
     @unittest.skipUnless(sys.platform == "win32", "requires a real Windows cmd.exe and process API")
     def test_real_windows_batch_wrappers_with_spaces_unicode_and_metacharacters(self):
@@ -253,6 +256,7 @@ class PortableStdioTests(unittest.TestCase):
         item = acp.OpenCodeACPClient(command=sys.executable, args=[str(ROOT / "tests/fake_acp.py"), "descendant"])
         reply = self.complete(item).choices[0].message.content
         pid = int(reply.removeprefix("FAKE_CHILD_PID:"))
+        item.close()  # closing the job must terminate the descendant (KILL_ON_JOB_CLOSE)
         kernel = ctypes.WinDLL("kernel32", use_last_error=True)
         kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
         kernel.OpenProcess.restype = wintypes.HANDLE

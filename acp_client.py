@@ -21,6 +21,7 @@ from .launcher import ProcessTree
 
 BRIDGE_MODE = "build"
 MAX_FRAME = 4 * 1024 * 1024
+MAX_STARTUP_NOISE = 5
 OPEN_TAG, CLOSE_TAG = "<hermes_tool_call>", "</hermes_tool_call>"
 CONTRACT = (
     "REMOTE TOOL PROTOCOL: This conversation belongs to Hermes, not OpenCode. "
@@ -299,6 +300,9 @@ class BridgeWorker:
         self._active = None
         self._dead = threading.Event()
         self._closed = False
+        self._framed = False
+        self._startup_noise = 0
+        self._noise_sample = ""
         self._sessions = []
         self._sequence = 0
         self._cwd = cwd
@@ -386,9 +390,23 @@ class BridgeWorker:
                     raise WorkerDied("OpenCode ACP exited before replying")
                 if len(line) > MAX_FRAME:
                     raise ValueError("OpenCode ACP response exceeded the frame limit")
-                message = json.loads(line)
+                if not line.strip():
+                    continue
+                try:
+                    message = json.loads(line)
+                except json.JSONDecodeError:
+                    # npm launchers print update notices outside the protocol
+                    if self._startup_noise < MAX_STARTUP_NOISE:
+                        if not self._noise_sample:
+                            self._noise_sample = line.strip()[:160]
+                        self._startup_noise += 1
+                        continue
+                    raise ValueError(
+                        "OpenCode ACP emitted a non-JSON frame: " + repr(self._noise_sample or line.strip()[:160])
+                    ) from None
                 if not isinstance(message, dict):
                     raise ValueError("OpenCode ACP emitted a non-object frame")
+                self._framed = True
                 method = message.get("method")
                 if isinstance(method, str):
                     if "id" in message:
@@ -512,7 +530,7 @@ class OpenCodeACPClient:
 
     def __init__(self, *, command=None, args=None, acp_command=None, acp_args=None, **kwargs):
         self.command = acp_command or command or opencode_command()
-        self.args = list(acp_args or args or ["acp", "--pure"])
+        self.args = list(acp_args or args or ["acp"])
         self.workspace = str(WORKSPACE)
         self.base_url = "acp://hermes-opencode-acp"
         self.chat = Record(completions=Record(create=self._create_chat_completion))

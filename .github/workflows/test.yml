@@ -40,6 +40,6 @@ jobs:
       - name: Verify the runner's npm prerequisite
         run: npm --version
       - name: Install the pinned official CLI in a job-local directory
-        run: npm install --prefix .opencode-runtime --no-audit --no-fund @opencode/cli@2.1.2
+        run: npm install --prefix .opencode-runtime --no-audit --no-fund @opencode/cli@2.3.2
       - name: Verify actual npm launcher, ACP handshake and free-model/Build selection
         run: python tests/smoke_cli.py --npm-prefix .opencode-runtime

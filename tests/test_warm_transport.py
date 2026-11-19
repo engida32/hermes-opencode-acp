@@ -90,10 +90,10 @@ class IsolationAndSignatureTests(unittest.TestCase):
         self.assertIsNone(acp.optional_config_option(session, "effort", "max"))
         self.assertIsNone(acp.optional_config_option({"configOptions": []}, "effort", "low"))
 
-    def test_default_command_line_is_pure(self):
+    def test_default_command_line_uses_acp_subcommand(self):
         item = acp.OpenCodeACPClient()
         self.addCleanup(item.close)
-        self.assertEqual(item.args, ["acp", "--pure"])
+        self.assertEqual(item.args, ["acp"])
 
 
 class WarmProcessTests(unittest.TestCase):

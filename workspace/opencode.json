@@ -10,8 +10,23 @@
     "doom_loop": "deny"
   },
   "agent": {
-    "title": { "model": "opencode/glm-5.3-flash-free" },
-    "summary": { "model": "opencode/glm-5.3-flash-free" },
-    "compaction": { "model": "opencode/glm-5.3-flash-free" }
-  }
+    "title": {
+      "model": "opencode/glm-5.3-flash-free"
+    },
+    "summary": {
+      "model": "opencode/glm-5.3-flash-free"
+    },
+    "compaction": {
+      "model": "opencode/glm-5.3-flash-free"
+    }
+  },
+  "plugins": [],
+  "mcp": {
+    "servers": {}
+  },
+  "skills": [],
+  "share": "disabled",
+  "autoupdate": false,
+  "lsp": false,
+  "instructions": []
 }
