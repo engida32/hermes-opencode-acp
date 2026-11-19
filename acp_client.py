@@ -530,7 +530,7 @@ class OpenCodeACPClient:
 
     def __init__(self, *, command=None, args=None, acp_command=None, acp_args=None, **kwargs):
         self.command = acp_command or command or opencode_command()
-        self.args = list(acp_args or args or ["acp", "--pure"])
+        self.args = list(acp_args or args or ["acp"])
         self.workspace = str(WORKSPACE)
         self.base_url = "acp://hermes-opencode-acp"
         self.chat = Record(completions=Record(create=self._create_chat_completion))
