@@ -26,6 +26,9 @@ if SCENARIO == "descendant":
     child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"],
                              stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                              stderr=subprocess.DEVNULL)
+if SCENARIO == "banner":
+    print("Update available: 9.9.9 -> run npm i -g @opencode/cli", flush=True)
+    print("", flush=True)
 
 
 def send(message):
@@ -59,7 +62,8 @@ for line in sys.stdin:
     method, rid = request.get("method"), request.get("id")
     if method == "initialize":
         if SCENARIO == "invalid-json":
-            print("not-json", flush=True)
+            for _ in range(10):
+                print("not-json", flush=True)
             continue
         result = {"protocolVersion": 1, "agentCapabilities": {}}
     elif method == "session/new":

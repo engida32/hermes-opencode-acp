@@ -21,6 +21,7 @@ from .launcher import ProcessTree
 
 BRIDGE_MODE = "build"
 MAX_FRAME = 4 * 1024 * 1024
+MAX_STARTUP_NOISE = 5
 OPEN_TAG, CLOSE_TAG = "<hermes_tool_call>", "</hermes_tool_call>"
 CONTRACT = (
     "REMOTE TOOL PROTOCOL: This conversation belongs to Hermes, not OpenCode. "
@@ -299,6 +300,8 @@ class BridgeWorker:
         self._active = None
         self._dead = threading.Event()
         self._closed = False
+        self._framed = False
+        self._startup_noise = 0
         self._sessions = []
         self._sequence = 0
         self._cwd = cwd
@@ -386,9 +389,19 @@ class BridgeWorker:
                     raise WorkerDied("OpenCode ACP exited before replying")
                 if len(line) > MAX_FRAME:
                     raise ValueError("OpenCode ACP response exceeded the frame limit")
-                message = json.loads(line)
+                if not line.strip():
+                    continue
+                try:
+                    message = json.loads(line)
+                except json.JSONDecodeError:
+                    # npm launchers print update notices outside the protocol
+                    if self._startup_noise < MAX_STARTUP_NOISE:
+                        self._startup_noise += 1
+                        continue
+                    raise ValueError("OpenCode ACP emitted a non-JSON frame") from None
                 if not isinstance(message, dict):
                     raise ValueError("OpenCode ACP emitted a non-object frame")
+                self._framed = True
                 method = message.get("method")
                 if isinstance(method, str):
                     if "id" in message:
